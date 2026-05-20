@@ -1,9 +1,11 @@
 # CLAUDE.md — MycoTools
 
-R package that is **both** the data-processing engine for the Mycoteam
-tooling **and** the home of the Shiny data platform app. Consumed by the
+R package providing the data-processing **engine** for the Mycoteam tooling,
+plus an optional, bundled Shiny app (`run_app()`) as a user-friendly
+front-end for the same functions. The engine is the package's main purpose;
+the app is an important convenience. Consumed by analyst scripts and by the
 `ShinyMycoTools/` deploy shell (which installs this package from GitHub and
-serves its bundled app) and by analyst scripts.
+serves its bundled app).
 
 Standard R package layout: exported engine logic under `R/`, the bundled
 app under `inst/shiny/`, docs under `man/`, dependencies in `DESCRIPTION`.
@@ -27,7 +29,7 @@ MycoTools/
 
 | Function | What it does |
 |----------|--------------|
-| `run_app()` (`run_app.R`) | Launches the bundled Shiny app via `shiny::runApp(system.file("shiny", package = "MycoTools"))`. Checks the `Suggests`-level app deps and errors with an actionable message if any are missing. |
+| `run_app()` (`run_app.R`) | Launches the bundled Shiny app via `shiny::runApp(system.file("shiny", package = "MycoTools"))`. App deps are hard `Imports`, so it runs standalone with no extra setup. |
 | `import_data()` (`import_dataset.R`) | CSV / CSV2 / TSV / Excel reader with auto delimiter + decimal-mark detection. |
 | `define_variables_datetime()` | Parses unified or split date/time columns into `gen_datetime`, `gen_date`, `gen_time`. |
 | `define_variables_date()` | Wrapper around `_datetime()` for date-only inputs. |
@@ -41,11 +43,13 @@ MycoTools/
 ## The bundled Shiny app
 
 Since 0.2.0 the Shiny UI lives in `inst/shiny/app.R` and is launched with the
-exported `run_app()` (the eq5d pattern). The app is a thin UI: it calls into
-this package's own exported functions for all data processing. App-only
-dependencies — `shiny`, `bslib`, `DT`, `plotly`, `writexl` — are declared in
-`Suggests`, so the engine can be installed without them; `run_app()` checks
-they are present and stops with an actionable message otherwise.
+exported `run_app()`. The app is an **optional, user-facing front-end** — not
+the package's main purpose — and is a thin UI that calls into this package's
+own exported functions for all data processing. Its dependencies (`shiny`,
+`bslib`, `DT`, `plotly`, `writexl`) are hard `Imports` (since 0.2.1), so
+`run_app()` works standalone in RStudio for advanced users and the Connect
+Cloud deploy resolves them automatically (renv/`writeManifest()` follow
+`Imports`, not `Suggests`).
 
 For deployment, the `ShinyMycoTools/` repo serves this bundled app via
 `shiny::shinyAppDir(system.file("shiny", package = "MycoTools"))`. Do not copy
@@ -88,14 +92,16 @@ inject. Pass `input$X` as a plain string; the package resolves it.
 
 Declared in `DESCRIPTION`.
 
-- **Imports (engine):** `dplyr`, `tidyr`, `lubridate` (data manipulation,
+- **Imports — engine:** `dplyr`, `tidyr`, `lubridate` (data manipulation,
   datetime parsing); `rlang` (`:=`, `sym`, `ensym`, `enquo`, `as_name`,
   `.data`); `parsedate` (`parse_date()` in the split date+time path);
   `readr`, `readxl`, `tools` (`import_data()`); `magrittr` (pipe re-export).
   `data.table` and `zoo` are declared but only referenced from commented-out
   code — they produce an `R CMD check` NOTE; see `../TODOS.md`.
-- **Suggests (app-only):** `shiny`, `bslib`, `DT`, `plotly`, `writexl`, plus
-  `testthat`. Checked at runtime by `run_app()`.
+- **Imports — bundled app:** `shiny`, `bslib`, `DT`, `plotly`, `writexl`
+  (hard deps since 0.2.1 so `run_app()` and the deploy resolve them without
+  relying on `Suggests`-following).
+- **Suggests:** `testthat`.
 
 ## Build & release
 

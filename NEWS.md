@@ -1,3 +1,15 @@
+# MycoTools 0.2.1
+
+## Dependencies
+
+* Moved the bundled app's dependencies (`shiny`, `bslib`, `DT`, `plotly`,
+  `writexl`) from `Suggests` to `Imports`. The Shiny app is an optional,
+  user-friendly front-end (`run_app()`) — not the package's main purpose —
+  but making these hard dependencies means `run_app()` works standalone in
+  RStudio without setup, and the Connect Cloud deploy resolves the full stack
+  automatically (renv and `rsconnect::writeManifest()` follow `Imports`, not
+  `Suggests`).
+
 # MycoTools 0.2.0
 
 ## Bundled Shiny app
