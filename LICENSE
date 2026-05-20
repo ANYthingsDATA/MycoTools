@@ -1,0 +1,26 @@
+Proprietary Software License
+
+Copyright © 2024–2026 ANYthings v/ Anders B. Nygaard and Mycoteam AS. All rights reserved.
+
+NOTE: This is a placeholder license. Final wording is pending review.
+
+This software and its source code, including but not limited to the MYCOindex
+algorithms and the sensor data processing functions provided by the MycoTools
+R package (collectively, "the Software"), are the proprietary and confidential
+property of ANYthings v/ Anders B. Nygaard and Mycoteam AS.
+
+No permission is granted to:
+
+  - Use, copy, modify, merge, publish, or distribute the Software or any part thereof
+  - Sublicense or sell copies of the Software
+  - Reverse engineer, decompile, or disassemble the Software
+
+except with the express prior written consent of both ANYthings v/ Anders B. Nygaard
+and Mycoteam AS.
+
+The Software is provided for internal use only. Unauthorized use, reproduction, or
+distribution of this Software, in whole or in part, may result in civil and criminal
+penalties and will be prosecuted to the maximum extent possible under applicable law.
+
+For licensing inquiries, contact:
+  ANYthings v/ Anders B. Nygaard — anders@anythings.no

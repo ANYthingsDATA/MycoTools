@@ -1,0 +1,75 @@
+# MycoTools 0.2.0
+
+## Bundled Shiny app
+
+* The MycoTools Shiny application is now bundled inside the package
+  (`inst/shiny/`) and launched with the new exported `run_app()`. It
+  previously lived in the separate `ShinyMycoTools` repo and was vendored
+  into the app as a tarball; it now travels with the package.
+* App-only dependencies (`shiny`, `bslib`, `DT`, `plotly`, `writexl`) are
+  declared in `Suggests`. `run_app()` checks they are installed and stops
+  with an actionable message if any are missing — the core data-processing
+  API has no hard dependency on them.
+
+## Cleanup
+
+* Removed leftover package-skeleton files (`R/hello.R`, `R/test.R`) and the
+  stray `hello()` export.
+
+# MycoTools 0.1.0
+
+First release intended for downstream consumption by `ShinyMycoTools`.
+Backports fixes and API improvements that originated in the app.
+
+## Bug fixes
+
+* `make_complete_date()`: fixed "`to` must be of length 1" error when
+  the data had multiple groups (site / sensor / port). Now generates the
+  date sequence per group via `rowwise()` + `tidyr::unnest()` instead of
+  passing a vector to `seq()`. Also filters non-finite min/max before
+  generating the sequence.
+* `import_data()`: detects files with an Excel extension that are not
+  valid Excel binaries (HTML exports, very old Excel 5/95 files) via
+  `readxl::excel_format()` and raises a user-friendly error instead of
+  a cryptic libxls/BIFF message.
+* `import_data()`: passes `comment = ""` instead of `NULL` to
+  `readr::read_delim()` when the caller did not provide a comment
+  character (newer `readr` errors on `NULL`).
+
+## API
+
+* All `define_variables_*()` functions now accept column references as
+  **either** a bare symbol **or** a single character string. This
+  enables direct use from Shiny (`input$map_temp`) without
+  `rlang::sym()` / `!!` gymnastics at the call site. Implemented via a
+  new internal helper `.resolve_col()`.
+* `make_complete_date()` accepts plain character column names for
+  `input_date`, `input_site_id`, `input_sensor_id`, `input_sensor_ports`.
+* `define_variables_datetime()`: gained a string-aware `get_col()`
+  branch; same string-or-symbol behaviour as the rest of the family.
+
+## Internals
+
+* New internal helper `.parse_numeric()` handles decimal-comma input
+  (European locale CSVs) transparently. Used by
+  `define_variables_temp()`, `_rhum()`, `_wood()`, and `_ohm()` — these
+  no longer fall back to `as.double()`, which silently produced `NA`
+  on `"23,5"`-style values.
+* `define_variables_datetime()` parses datetimes with
+  `lubridate::parse_date_time()` (orders `YmdHMS`, `Ymd HMS`, `dmYHMS`,
+  `mdYHMS`, `Ymd`) instead of `parsedate::parse_datetime()`. The split
+  date+time path still uses `parsedate::parse_date()` for the date
+  half, so `parsedate` remains a dependency.
+* `add_variables.R::add_date_seasons()`: refactored so all season
+  calculations happen inside a single `dplyr::mutate()` using a
+  `.tmp_yr` scratch column that is dropped on the way out. Output is
+  unchanged.
+
+## Dependencies
+
+* Added: `readr`, `tidyr`, `tools` (all already used by the code; now
+  declared explicitly).
+
+# MycoTools 0.0.0.9000
+
+* Added a `NEWS.md` file to track changes to the package.

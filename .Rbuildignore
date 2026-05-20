@@ -1,0 +1,12 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^app\.R$
+^www$
+^frost_api_v1\.R$
+^CLAUDE\.md$
+^\.RData$
+^\.lintr$
