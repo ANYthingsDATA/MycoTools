@@ -1,119 +1,180 @@
-
 # MycoTools
 
-[![Build Status](https://travis-ci.org/ANYthingsDATA/MycoTools.svg?branch=master)](https://travis-ci.org/ANYthingsDATA/MycoTools)
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/MycoTools)](https://cran.r-project.org/package=MycoTools)
-[![Downloads](http://cranlogs.r-pkg.org/badges/grand-total/MycoTools)](https://cran.r-project.org/package=MycoTools)
+![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)
+![R](https://img.shields.io/badge/R-%E2%89%A5%204.3-blue.svg)
+![License](https://img.shields.io/badge/license-Proprietary-red.svg)
+
+> Proprietary software. Copyright © 2024–2026 ANYthings v/ Anders B. Nygaard
+> and Mycoteam AS. All rights reserved. See [LICENSE](LICENSE).
 
 ## Overview
 
-This package contains tools for processing and analyzing data from climate sensor and generating MycoIndex scores.
+**MycoTools** is an R package for importing, normalising, and analysing
+indoor-climate and moisture sensor data from heterogeneous logger formats. It
+is the data-processing **engine** behind the Mycoteam tooling, and also ships
+with an optional, user-friendly **Shiny app** front-end (`run_app()`).
+
+The package provides:
+
+- **Robust import** of CSV / CSV2 / TSV / Excel logger exports, with
+  auto-detected delimiter and decimal mark (handles European decimal commas).
+- **Datetime normalisation** from either a unified datetime column or split
+  date + time columns.
+- **Sensor-ID normalisation**, decimal-comma-aware numeric coercion, and
+  gap-filling onto a regular per-group time interval.
+- **Season and ISO-week derivation** for calendar-based aggregation.
+- The **MYCOindex** risk-scoring system for mold, temperature, and wood
+  moisture conditions.
+
+Developed by [ANYthings](https://anythings.no) (sole proprietorship of Anders
+B. Nygaard) for Mycoteam AS.
 
 ## Prerequisites
-To run MycoTools you must first make sure you have the following software installed. 
-- R  >= 4.3
-  - https://cran.r-project.org/bin/windows/base/ 
-- RStudio desktop 
-  - https://posit.co/download/rstudio-desktop/
-- Rtools must be installed
-  - https://cran.r-project.org/bin/windows/Rtools/ 
 
-### Installation of required packages
-Once R and RStudio is up and running, you should install the following packages:
-- devtools
-- usethis
+- **R ≥ 4.3** — https://cran.r-project.org/bin/windows/base/
+- **RStudio Desktop** (recommended for analysts) —
+  https://posit.co/download/rstudio-desktop/
+- **Rtools** (Windows, recommended for building packages from source) —
+  https://cran.r-project.org/bin/windows/Rtools/
 
-The commands below will check if the packages are already installed, and installs them if they are not installed.
-```R
-# Install devtools if not already installed
-if (!requireNamespace("devtools", quietly = TRUE)) {
-  install.packages("devtools")
-}
-# Install usethis if not already installed
-if (!requireNamespace("usethis", quietly = TRUE)) {
-  install.packages("usethis")
-}
+Install the `devtools` helper if you don't already have it:
+
+```r
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 ```
 
-## Connecting RStudio to Github
-To install the package, you must create a Github.com user account and be granted access to the ANYthingsDATA/MycoTools repository. Once you have a github user and access to the repository
-```R
-# Create GitHub token
+Runtime dependencies (`dplyr`, `tidyr`, `lubridate`, `readr`, `readxl`,
+`shiny`, `bslib`, `DT`, `plotly`, `writexl`, …) are resolved automatically on
+install.
+
+## Installation
+
+### From the public repository (current)
+
+While the repository is public, install the latest tagged release directly —
+**no GitHub token required**:
+
+```r
+# Latest commit on the default branch
+devtools::install_github("ANYthingsDATA/MycoTools")
+
+# …or pin a specific release tag
+devtools::install_github("ANYthingsDATA/MycoTools@v0.2.1")
+```
+
+### From a private repository (token fallback)
+
+If the repository has been made private again, you must have been granted
+access to it and authenticate with a GitHub personal access token (PAT):
+
+```r
+# 1. Create a PAT (opens github.com in your browser). Choose the "repo" scope
+#    and a sensible expiry; copy the token before you close the page.
 usethis::create_github_token()
-```
 
-- This will take you out of RStudio to Github for help in token creation.
-- Specify the permissions given to R studio in the token name.
-- Specify for how long the token is valid.
-  - When your token expire, you will have to create a new token. This can be done as many times as you need. 
-- Make sure the token is copied as it will never be seen again.
-  - Save a copy of your token in a word or notepad document.
-  - Example token: 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
-- Your token will be used to access Github APIs and install Mycotools from the private Github repository. 
-
-To add your newly created token to RStudio, run the following command and follow the instruction in the console window.
-```R
-# Set up GitHub token for package installation
+# 2. Store it so R can authenticate (paste the token when prompted; choose
+#    "Replace these credentials" if you are renewing an expired one).
 gitcreds::gitcreds_set()
+
+# 3. Install using the stored token.
+devtools::install_github(
+  "ANYthingsDATA/MycoTools",
+  auth_token = gh::gh_token()
+)
 ```
 
-- If you have a token that now has expired, select "Replace these credentials" and add your newly created token.
-
-
-## Installing/Updating the MycoTools package
-
-To install the latest development version of MycoTools from GitHub, use the `devtools` package:
-```R
-# Install MycoTools package from GitHub
-devtools::install_github("ANYthingsDATA/MycoTools", auth_token = gh::gh_token())
-```
-
-If your Github token is expired this installation will cause an error (401) or unauthorized access. If so, re-run the steps described in "Connecting RStudio to Github" to create a new token before installing/updating MycoTools.
-
+A `401 Unauthorized` error means your token is missing, expired, or lacks
+access to the repository — repeat the steps above with a fresh token.
 
 ## Usage
 
-Provide examples and code snippets to demonstrate how to use your package. Include both basic and advanced usage examples.
-```R
-# Load the package
+A typical pipeline reads a logger file, normalises the columns, scores the
+MYCOindex, and adds calendar features. Every `define_variables_*` and
+`make_mycoindex_*` function accepts a column reference as **either a bare name
+or a string**, so the same code works from analyst scripts and from the Shiny
+app.
+
+```r
 library(MycoTools)
 
-# Example usage
-data <- your_function(input_data)
+raw <- import_data("logger_export.csv")        # auto delimiter + decimal mark
+
+processed <- raw |>
+  define_variables_datetime(input_datetime = Timestamp, tz = "Europe/Oslo") |>
+  define_variables_sensorID(input_sensor = Sensor, input_port = Port) |>
+  define_variables_temp(input_temp = Temperature) |>
+  define_variables_rhum(input_rhum = RelHumidity) |>
+  define_variables_wood(input_wood = WoodMoisture) |>
+  make_mycoindex_mold(input_mold = gen_rhum) |>  # RH: <75=0, 85=0.5, ≥95=1
+  make_mycoindex_temp(input_temp = gen_temp) |>  # °C: <4=0, 14–35=1, ≥35=0
+  make_mycoindex_wood(input_wood = gen_wood) |>
+  add_date_seasons(gen_datetime)                 # season, ISO week/year, month
+
+# Fill gaps onto a regular per-group time spine (returns the spine; left-join
+# it back to `processed` to expose the gaps).
+spine <- make_complete_date(
+  processed,
+  input_date      = "gen_date",
+  input_site_id   = "SiteID",
+  input_sensor_id = "gen_sensorID",
+  timeframe       = "hour"
+)
 ```
+
+### Launch the Shiny app
+
+The package bundles a Shiny front-end that wraps the same functions for
+import, processing, visualisation, and export. Its dependencies are hard
+`Imports`, so it runs standalone with no extra setup:
+
+```r
+MycoTools::run_app()
+```
+
+## Function reference
+
+| Function | Purpose |
+|----------|---------|
+| `run_app()` | Launch the bundled Shiny app. |
+| `import_data()` | Read CSV / CSV2 / TSV / Excel with auto delimiter & decimal-mark detection. |
+| `define_variables_datetime()` | Normalise a unified or split date/time into `gen_datetime`, `gen_date`, `gen_time`. |
+| `define_variables_date()` | Date-only convenience wrapper around `define_variables_datetime()`. |
+| `define_variables_sensorID()` | Build `gen_sensorID` from a sensor (and optional port) column. |
+| `define_variables_temp()` / `_rhum()` / `_wood()` / `_ohm()` | Numeric coercion with decimal-comma handling. |
+| `make_mycoindex_mold()` / `_temp()` / `_wood()` | MYCOindex risk scoring against configurable thresholds. |
+| `make_complete_date()` | Generate a per-group regular-interval date spine. |
+| `add_date_seasons()` | Add season, year-season, ISO week/year, and month label/number. |
+| `make_rolling_mix_mold()` / `_temp()` / `_wood()` | _Experimental — time-aware rolling means over the MYCOindex columns (helper not yet implemented; not functional)._ |
 
 ## Documentation
 
-Link to the complete package documentation or vignettes if available. Provide information on where users can find detailed documentation for your functions and classes.
+Every exported function has roxygen help — use `?function_name` in R, e.g.
+`?import_data` or `?make_mycoindex_mold`. A `_pkgdown.yml` is included for
+building a documentation site with `pkgdown::build_site()`.
 
 ## Contributing
 
-If you want to contribute to the development of this package, please follow the guidelines in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-## Issues
-
-If you encounter any issues with the package or have suggestions for improvement, please open an issue on the [GitHub Issues page](https://github.com/yourusername/yourpackagename/issues).
-
-## License
-
-This package is proprietary software. Copyright © 2024–2026 ANYthings v/ Anders B. Nygaard and Mycoteam AS. All rights reserved. See the [LICENSE](LICENSE) file for details.
+This is an internal, proprietary package. If you have access and want to
+contribute, change the engine in `R/` and the bundled app in `inst/shiny/`,
+bump `Version:` in `DESCRIPTION`, add a `NEWS.md` entry, and update the tests.
+Report bugs and feature requests on the
+[GitHub Issues page](https://github.com/ANYthingsDATA/MycoTools/issues).
 
 ## Acknowledgments
 
-If your package depends on other packages or resources, acknowledge and link to them here.
+MycoTools builds on the R ecosystem — notably **dplyr**, **tidyr**,
+**lubridate**, **readr**, **readxl**, **parsedate**, and **rlang** for the
+data-processing engine, and **shiny**, **bslib**, **DT**, **plotly**, and
+**writexl** for the bundled app.
+
+## License
+
+This package is proprietary software. Copyright © 2024–2026 ANYthings v/
+Anders B. Nygaard and Mycoteam AS. All rights reserved. See the
+[LICENSE](LICENSE) file for the full terms.
 
 ## Author
 
-- Anders Nygaard — [ANYthings](https://anythings.no) (sole proprietorship)
-- anders [at] anythings.no
-
-
-## TODO:
-
-
-
-sjekk import data
-sjekk parsedate
-sjekk complete date
-vurder
-combi mixmold/mixwood og mixtemp mold x temp og wodd x temp
+- **Anders Nygaard** — [ANYthings](https://anythings.no) (sole proprietorship)
+  · anders [at] anythings.no
+- Copyright holders: ANYthings v/ Anders B. Nygaard and Mycoteam AS

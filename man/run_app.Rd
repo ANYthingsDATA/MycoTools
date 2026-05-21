@@ -20,13 +20,14 @@ Shiny app.
 \description{
 Starts the bundled MycoTools data platform: import, process, visualise and
 export indoor-climate and moisture sensor data. The app lives in
-\code{inst/shiny/} and is launched via \code{\link[shiny:runApp]{shiny::runApp()}}.
+\verb{inst/shiny/} and is launched via \code{\link[shiny:runApp]{shiny::runApp()}}.
 }
 \details{
 The app's dependencies (\pkg{shiny}, \pkg{bslib}, \pkg{DT}, \pkg{plotly},
-\pkg{writexl}) are declared in \code{Suggests} rather than \code{Imports}, so the
-core data-processing API can be installed without them. \code{run_app()} checks
-they are present and stops with an actionable message if any are missing.
+\pkg{writexl}) are declared in \code{Imports} (since 0.2.1), so they are installed
+automatically with the package and \code{run_app()} works standalone with no extra
+setup. As a safeguard, \code{run_app()} still verifies they are present and stops
+with an actionable message if any are missing.
 }
 \examples{
 \dontrun{
