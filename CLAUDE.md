@@ -117,7 +117,9 @@ devtools::document("MycoTools")  # regenerate man/ (NAMESPACE is hand-managed,
 
 Release: bump `Version:` + `NEWS.md`, commit, tag `vX.Y.Z`, and push to the
 public GitHub repo. The deploy shell pins this tag via
-`renv::install("ANYthingsDATA/MycoTools@vX.Y.Z")`. See the umbrella
+`renv::install("git::https://github.com/ANYthingsDATA/MycoTools.git@vX.Y.Z")`
+(the `git::` clone form — the `owner/repo@ref` API form hits GitHub's
+unauthenticated rate limit). See the umbrella
 `CLAUDE.md` for the full cross-repo flow.
 
 ## Tests
