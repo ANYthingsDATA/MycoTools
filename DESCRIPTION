@@ -14,8 +14,7 @@ Description: Functions for importing, normalising, and analysing indoor
     coercion, gap-filling on regular time intervals, season and
     ISO-week derivation, and the MYCOindex risk scoring system for
     mold, temperature, and wood moisture conditions. Developed by
-    ANYthings (sole proprietorship of Anders B. Nygaard) for
-    Mycoteam AS.
+    ANYthings v/ Anders B. Nygaard for Mycoteam AS.
 License: file LICENSE
 Encoding: UTF-8
 Language: EN

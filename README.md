@@ -1,6 +1,6 @@
 # MycoTools
 
-![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2.2-blue.svg)
 ![R](https://img.shields.io/badge/R-%E2%89%A5%204.3-blue.svg)
 ![License](https://img.shields.io/badge/license-Proprietary-red.svg)
 
@@ -26,8 +26,8 @@ The package provides:
 - The **MYCOindex** risk-scoring system for mold, temperature, and wood
   moisture conditions.
 
-Developed by [ANYthings](https://anythings.no) (sole proprietorship of Anders
-B. Nygaard) for Mycoteam AS.
+Developed by [ANYthings](https://anythings.no) v/ Anders B. Nygaard for
+Mycoteam AS.
 
 ## Prerequisites
 
@@ -59,7 +59,7 @@ While the repository is public, install the latest tagged release directly —
 devtools::install_github("ANYthingsDATA/MycoTools")
 
 # …or pin a specific release tag
-devtools::install_github("ANYthingsDATA/MycoTools@v0.2.1")
+devtools::install_github("ANYthingsDATA/MycoTools@v0.2.2")
 ```
 
 ### From a private repository (token fallback)
@@ -175,6 +175,5 @@ Anders B. Nygaard and Mycoteam AS. All rights reserved. See the
 
 ## Author
 
-- **Anders Nygaard** — [ANYthings](https://anythings.no) (sole proprietorship)
-  · anders [at] anythings.no
+- **[ANYthings](https://anythings.no) v/ Anders B. Nygaard** · anders [at] anythings.no
 - Copyright holders: ANYthings v/ Anders B. Nygaard and Mycoteam AS
