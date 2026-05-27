@@ -168,17 +168,31 @@ define_variables_datetime <- function(
                          } else {
                            # Split date + time path
                            d <- .data[[date_col]]
-                           # Parse date robustly
-                           d_parsed <- if (inherits(d, "Date")) {
+                           # Parse the date column robustly to POSIXct. parsedate
+                           # handles ISO-8601 (incl. the "T" separator and "Z"
+                           # suffix), so a date column that already carries a
+                           # time-of-day is preserved rather than discarded.
+                           d_parsed <- if (inherits(d, "POSIXt")) {
                              d
+                           } else if (inherits(d, "Date")) {
+                             as.POSIXct(d, tz = tz)
                            } else {
                              parsedate::parse_date(as.character(d))
                            }
 
-                           # Time handling
                            if (is.null(time_col)) {
-                             t_str <- rep("00:00:00", length(d_parsed))
+                             # No separate time column: keep whatever time the date
+                             # already carries (midnight for date-only inputs, the
+                             # real time for datetime inputs). Do NOT append
+                             # "00:00:00" — that would corrupt a datetime-valued
+                             # column, e.g. "2015-10-07T12:00:00Z", into an
+                             # unparseable doubled time.
+                             lubridate::force_tz(d_parsed, tzone = tz)
                            } else {
+                             # Separate time column: combine the DATE part of the
+                             # parsed date with the provided time, so a
+                             # datetime-valued date column doesn't yield a doubled
+                             # time.
                              t_raw <- .data[[time_col]]
                              # If it's hms, format; else assume character-ish and keep
                              if (inherits(t_raw, "hms")) {
@@ -188,11 +202,12 @@ define_variables_datetime <- function(
                                                "00:00:00",
                                                as.character(t_raw))
                              }
+                             date_str <- ifelse(is.na(d_parsed), NA_character_,
+                                                format(d_parsed, "%Y-%m-%d"))
+                             combo <- ifelse(is.na(date_str), NA_character_,
+                                             paste0(date_str, " ", t_str))
+                             lubridate::parse_date_time(combo, orders = c("YmdHMS", "Ymd HMS", "Ymd HM", "dmYHMS", "mdYHMS", "Ymd"), tz = tz, quiet = TRUE)
                            }
-
-                           combo <- ifelse(is.na(d_parsed), NA_character_,
-                                           paste0(as.character(d_parsed), " ", t_str))
-                           lubridate::parse_date_time(combo, orders = c("YmdHMS", "Ymd HMS", "dmYHMS", "mdYHMS", "Ymd"), tz = tz, quiet = TRUE)
                          }
                        },
                        # 2) Derive date and time from the normalized POSIXct

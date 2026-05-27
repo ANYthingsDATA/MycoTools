@@ -1,6 +1,6 @@
 Package: MycoTools
 Title: Tools for Mycoteam Sensor Data Processing
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: c(
     person("Anders", "Nygaard", , "anders@anythings.no", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-1922-0751")),

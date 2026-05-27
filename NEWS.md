@@ -1,3 +1,19 @@
+# MycoTools 0.2.2
+
+## Bug fixes
+
+* `define_variables_datetime()` / `define_variables_date()` no longer corrupt
+  a date column that already carries a time-of-day. When a single datetime
+  column (e.g. ISO-8601 `2015-10-07T12:00:00Z`) was mapped as the date with no
+  separate time column, the split date+time path appended a default
+  `"00:00:00"`, producing an unparseable doubled time (`... 12:00:00 00:00:00`)
+  that yielded `NA` for every row of `gen_datetime`/`gen_date`/`gen_time`. This
+  also broke downstream date completion (`make_complete_date()` had no valid
+  dates to build a spine from). The split path now preserves the time the date
+  already carries when no time column is given, and when a time column *is*
+  given it combines that time with only the **date part** of the parsed value.
+  A `Ymd HM` parse order was added so seconds-less times like `"14:30"` parse.
+
 # MycoTools 0.2.1
 
 ## Dependencies
